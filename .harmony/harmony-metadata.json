@@ -1,0 +1,9 @@
+{
+  "appName": "eero-fleet",
+  "headers": [],
+  "harmony-version": "1.8.29",
+  "content-security-policy": {},
+  "appGroup": "other",
+  "displayName": "eero Fleet Health",
+  "description": "Fleet health regression dashboards with Jira integration"
+}
