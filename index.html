@@ -1,13 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>eero Fleet Health</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eero Fleet Health</title>
+<style>
+body{font-family:-apple-system,sans-serif;background:#0d1117;color:#c9d1d9;margin:0;padding:40px;max-width:1000px;margin:0 auto}
+h1{color:#58a6ff;text-align:center;margin-bottom:8px}
+.sub{text-align:center;color:#8b949e;margin-bottom:40px;font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;transition:border-color 0.2s}
+.card:hover{border-color:#58a6ff}
+.card h3{color:#c9d1d9;margin:0 0 8px;font-size:16px}
+.card p{color:#8b949e;font-size:13px;margin:0 0 16px}
+a.btn{display:inline-block;color:#58a6ff;text-decoration:none;font-size:13px;padding:6px 14px;border:1px solid #58a6ff;border-radius:6px;margin-right:8px;margin-bottom:8px}
+a.btn:hover{background:#58a6ff;color:#0d1117}
+.section{margin-top:40px}
+.section h2{color:#8b949e;font-size:14px;border-bottom:1px solid #30363d;padding-bottom:8px;margin-bottom:16px}
+.jira-status{text-align:center;color:#3fb950;font-size:13px;margin-top:12px}
+</style>
 </head>
 <body>
-  <div id="harmonyBanners"></div>
-  <div id="root"></div>
-  <script type="module" src="/src/index.tsx"></script>
+<h1>📊 eero Fleet Health</h1>
+<p class="sub">Fleet health regression dashboards · Powered by Kiro · Midway authenticated</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>🧪 Stage</h3>
+    <p>Internal stage fleet (groups 0,2)</p>
+    <a class="btn" href="/data/fleet_health/stage_0_2_2026-07-17_050001/dashboard.html">📊 Dashboard</a>
+    <a class="btn" href="/data/fleet_health/stage_0_2_2026-07-17_050001/exec_summary.html">📋 Summary</a>
+  </div>
+  <div class="card">
+    <h3>👥 Beta</h3>
+    <p>Employee beta fleet (groups 2,3)</p>
+    <a class="btn" href="/data/fleet_health/prod_2_3_2026-07-17_065323/dashboard.html">📊 Dashboard</a>
+    <a class="btn" href="/data/fleet_health/prod_2_3_2026-07-17_065323/exec_summary.html">📋 Summary</a>
+  </div>
+  <div class="card">
+    <h3>🌍 Prod</h3>
+    <p>Production retail fleet (group 0)</p>
+    <a class="btn" href="/data/fleet_health/prod_0_2026-07-17_090623/">📊 Dashboard</a>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📡 AP-Client Health</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🧪 Stage</h3>
+      <a class="btn" href="/data/ap_client_health/stage_0_2_2026-07-16_050001/dashboard.html">📊 Dashboard</a>
+      <a class="btn" href="/data/ap_client_health/stage_0_2_2026-07-16_050001/exec_summary.html">📋 Summary</a>
+    </div>
+    <div class="card">
+      <h3>👥 Beta</h3>
+      <a class="btn" href="/data/ap_client_health/prod_2_3_2026-07-16_100042/dashboard.html">📊 Dashboard</a>
+      <a class="btn" href="/data/ap_client_health/prod_2_3_2026-07-16_100042/exec_summary.html">📋 Summary</a>
+    </div>
+    <div class="card">
+      <h3>🌍 Prod</h3>
+      <a class="btn" href="/data/ap_client_health/prod_0_2026-07-17_015038/dashboard.html">📊 Dashboard</a>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📋 On-Call Reports</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Latest Reports</h3>
+      <p>Most recent on-call triage reports</p>
+      <a class="btn" href="/data/oncall/">📁 Browse All</a>
+    </div>
+  </div>
+</div>
+
+<div class="jira-status" id="jira-info"></div>
+<script>
+fetch('/data/jira_mesh.json').then(r=>r.json()).then(d=>{
+  document.getElementById('jira-info').textContent='✅ '+d.tickets.length+' Jira tickets synced ('+d.synced_at.substring(0,16).replace('T',' ')+')';
+}).catch(()=>{});
+</script>
 </body>
 </html>

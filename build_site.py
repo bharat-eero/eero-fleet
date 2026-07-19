@@ -158,20 +158,30 @@ def generate_results_json(runs):
 def generate_exec_summary(pipeline, output_name):
     """Read exec_summary.json from each run's analysis/ dir and combine by category."""
     pipeline_dir = RESULTS_DIR / pipeline
-    runs_by_cat = get_latest_runs(pipeline_dir, max_per_cat=1)
+    # Scan more runs (up to 20) to find ones that have exec_summary
+    runs_by_cat = get_latest_runs(pipeline_dir, max_per_cat=20)
 
+    url_prefix = "ap-client-metric" if "ap_client" in pipeline else "fleet-metric"
     summaries = {}
     for cat, runs in runs_by_cat.items():
-        if not runs:
-            continue
-        es_path = runs[0] / "analysis" / "exec_summary.json"
-        if es_path.exists():
-            try:
-                data = json.loads(es_path.read_text())
-                summaries[cat] = data
-                print(f"  Loaded {pipeline} exec_summary for {cat} from {runs[0].name}")
-            except (json.JSONDecodeError, IOError) as e:
-                print(f"  WARNING: Failed to read {es_path}: {e}")
+        cat_list = []
+        for run_dir in runs:
+            es_path = run_dir / "analysis" / "exec_summary.json"
+            if es_path.exists():
+                try:
+                    data = json.loads(es_path.read_text())
+                    # Add fields the JS expects
+                    data["run"] = run_dir.name
+                    data["dashboard_url"] = f"/data/{pipeline}/{run_dir.name}/dashboard.html"
+                    data["summary_url"] = f"/data/{pipeline}/{run_dir.name}/exec_summary.html"
+                    cat_list.append(data)
+                    print(f"  Loaded {pipeline} exec_summary for {cat} from {run_dir.name}")
+                except (json.JSONDecodeError, IOError) as e:
+                    print(f"  WARNING: Failed to read {es_path}: {e}")
+            if len(cat_list) >= 3:
+                break
+        if cat_list:
+            summaries[cat] = cat_list
 
     out_path = DATA_DIR / output_name
     out_path.write_text(json.dumps(summaries, indent=2))
@@ -367,6 +377,65 @@ def main():
     # Step 5: Sync Jira
     print("[5/5] Syncing Jira tickets...")
     sync_jira_tickets()
+    print()
+
+    # Step 6: Fix CSP issues in all data HTML files
+    print("[6/6] Fixing CSP in HTML files...")
+    import re as _re_csp
+
+    # Replace CDN Plotly with local copy (CSP blocks external scripts)
+    plotly_cdn = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2/plotly.min.js"
+    plotly_local = "/plotly.min.js"
+    cdn_count = 0
+    inject_count = 0
+    for html_file in DATA_DIR.rglob("*.html"):
+        content = html_file.read_text(errors='ignore')
+        if '/csp-fix.js' in content:
+            continue
+        modified = False
+
+        # Replace Plotly CDN with local
+        if plotly_cdn in content:
+            content = content.replace(plotly_cdn, plotly_local)
+            cdn_count += 1
+            modified = True
+
+        # Extract inline <style>...</style> blocks into external .css file
+        style_pattern = _re_csp.compile(r'<style>(.*?)</style>', _re_csp.DOTALL)
+        styles = style_pattern.findall(content)
+        if styles:
+            css_name = html_file.stem + "_inline.css"
+            css_path = html_file.parent / css_name
+            css_path.write_text("\n".join(styles))
+            content = style_pattern.sub('', content)
+            # Add link to CSS in <head>
+            if '</head>' in content:
+                content = content.replace('</head>', f'<link rel="stylesheet" href="{css_name}">\n</head>')
+            modified = True
+
+        # Extract inline <script>...</script> blocks into external .js file
+        script_pattern = _re_csp.compile(r'<script>(.*?)</script>', _re_csp.DOTALL)
+        scripts = script_pattern.findall(content)
+        if scripts:
+            js_name = html_file.stem + "_inline.js"
+            js_path = html_file.parent / js_name
+            js_path.write_text("\n".join(scripts))
+            content = script_pattern.sub('', content)
+            inject_tag = f'<script src="/csp-fix.js"></script>\n<script src="{js_name}"></script>\n'
+            if '</body>' in content:
+                content = content.replace('</body>', inject_tag + '</body>')
+            else:
+                content += inject_tag
+            modified = True
+        elif not modified and '<script' in content:
+            content = content.replace('<script', '<script src="/csp-fix.js"></script>\n<script', 1)
+            modified = True
+
+        if modified:
+            html_file.write_text(content)
+            inject_count += 1
+
+    print(f"  Fixed CSP in {inject_count} HTML files (Plotly CDN replaced in {cdn_count})")
     print()
 
     # Summary

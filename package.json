@@ -2,7 +2,7 @@
   "name": "harmony-eero-fleet",
   "version": "1.0.0",
   "description": "eero Fleet Health - Fleet health regression dashboards with Jira integration",
-  "homepage": "/eero-fleet/",
+  "homepage": "/",
   "private": true,
   "scripts": {
     "dev": "vite",
