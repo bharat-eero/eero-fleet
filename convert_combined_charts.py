@@ -17,12 +17,31 @@ def date_to_ts(d):
 
 def extract_all_plotly_calls(html_content):
     """Extract all Plotly.newPlot("id", traces, layout, config) calls from HTML."""
-    pattern = re.compile(r'Plotly\.newPlot\("([^"]+)",(\[.*?\]),(.*?),\{responsive', re.DOTALL)
+    import re as _re
     charts = []
-    for m in pattern.finditer(html_content):
-        div_id = m.group(1)
+    for m in _re.finditer(r'Plotly\.newPlot\("', html_content):
         try:
-            traces = json.loads(m.group(2))
+            # Get div_id
+            id_start = m.end()
+            id_end = html_content.index('"', id_start)
+            div_id = html_content[id_start:id_end]
+            
+            # Find the traces array start (first [ after div_id)
+            arr_start = html_content.index('[', id_end)
+            
+            # Count brackets to find matching ]
+            depth = 0
+            i = arr_start
+            while i < len(html_content):
+                if html_content[i] == '[': depth += 1
+                elif html_content[i] == ']':
+                    depth -= 1
+                    if depth == 0: break
+                i += 1
+            arr_end = i + 1
+            
+            traces_str = html_content[arr_start:arr_end]
+            traces = json.loads(traces_str)
             charts.append((div_id, traces))
         except:
             pass

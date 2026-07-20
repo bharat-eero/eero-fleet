@@ -116,7 +116,7 @@ def copy_pipeline_runs():
     """Copy latest 3 runs per category for each pipeline."""
     results = []
 
-    for pipeline in ("fleet_health", "ap_client_health"):
+    for pipeline in ("fleet_health", "ap_client_health", "acs_health"):
         pipeline_dir = RESULTS_DIR / pipeline
         runs_by_cat = get_latest_runs(pipeline_dir)
 
@@ -323,6 +323,7 @@ def sync_jira_tickets():
                         pass
 
             result = {
+                "ok": True,
                 "synced_at": datetime.now(timezone.utc).isoformat(),
                 "tickets": tickets,
             }
@@ -393,6 +394,11 @@ def main():
         if '/csp-fix.js' in content:
             continue
         modified = False
+
+        # Always inject csp-fix.js into dashboard.html (has inline style attributes)
+        if html_file.name == 'dashboard.html' and '</head>' in content:
+            content = content.replace('</head>', '<script src="/csp-fix.js"></script>\n</head>')
+            modified = True
 
         # Replace Plotly CDN with local
         if plotly_cdn in content:
