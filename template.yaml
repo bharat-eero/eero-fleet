@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Jira OAuth proxy for eero-fleet Harmony site
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.12
+    Environment:
+      Variables:
+        ATLASSIAN_CLIENT_ID: YdsUguKW7jKY9mU2NkepirxzX0HOEDrS
+        ATLASSIAN_CLIENT_SECRET: !Ref AtlassianSecret  # Set via parameter or Secrets Manager
+        REDIRECT_URI: https://eero-fleet.beta.harmony.a2z.com/auth/callback
+        HARMONY_ORIGIN: https://eero-fleet.beta.harmony.a2z.com
+
+Resources:
+  JiraProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: jira_oauth_proxy.handler
+      CodeUri: lambda/
+      Events:
+        AuthLogin:
+          Type: Api
+          Properties:
+            Path: /auth/login
+            Method: get
+        AuthCallback:
+          Type: Api
+          Properties:
+            Path: /auth/callback
+            Method: get
+        JiraMe:
+          Type: Api
+          Properties:
+            Path: /jira/me
+            Method: get
+        JiraSearch:
+          Type: Api
+          Properties:
+            Path: /jira/search
+            Method: get
+        JiraCreate:
+          Type: Api
+          Properties:
+            Path: /jira/create
+            Method: post
+        Options:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: options
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
