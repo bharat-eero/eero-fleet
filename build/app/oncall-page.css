@@ -1,0 +1,12 @@
+.oncall-hero{text-align:center;padding:30px 20px 20px;border-bottom:1px solid #333;margin-bottom:24px}
+.oncall-hero h2{font-size:22px;color:#4fc3f7;margin-bottom:8px}
+.oncall-hero p{font-size:13px;color:#888;max-width:600px;margin:0 auto}
+.oncall-grid{max-width:800px;margin:0 auto;padding:0 20px}
+.oncall-date{font-size:15px;font-weight:bold;color:#4fc3f7;margin:24px 0 10px;padding:8px 12px;background:linear-gradient(90deg,#1a2a4a,transparent);border-left:3px solid #4fc3f7;border-radius:0 4px 4px 0}
+.oncall-day-row{display:flex;gap:10px;margin:6px 0 6px 16px}
+.oncall-item{flex:1;padding:10px 16px;background:#1e1e3a;border:1px solid #333;border-radius:6px;display:flex;align-items:center;gap:10px;transition:border-color 0.2s,transform 0.2s}
+.oncall-item:hover{border-color:#4fc3f7;transform:translateY(-1px)}
+.oncall-time{font-family:monospace;font-size:11px;color:#888;background:#0a0a1a;padding:3px 6px;border-radius:3px}
+.oncall-link{color:#4fc3f7;text-decoration:none;font-size:13px;font-weight:500}
+.oncall-link:hover{text-decoration:underline;color:#80d8ff}
+.oncall-empty{color:#888;padding:40px;text-align:center;font-size:14px}

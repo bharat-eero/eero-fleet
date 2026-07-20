@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Health — My-eeroAI</title>
+<link rel="stylesheet" href="/style.css">
+<script nonce="s3cur3H4rmonyN0nc3" src="/theme.js"></script>
+<link rel="stylesheet" href="/fleet-health.css">
+</head>
+<body>
+<header class="page-header">
+  <h1>🏥 Fleet Health Check</h1>
+  <div class="header-right-area">
+    <div class="theme-selector">
+      <button class="theme-btn" data-t="dark" title="Dark"></button>
+      <button class="theme-btn" data-t="light" title="Light"></button>
+      <button class="theme-btn" data-t="cyberpunk" title="Cyberpunk"></button>
+      <button class="theme-btn" data-t="solarized" title="Solarized"></button>
+      <button class="theme-btn" data-t="aurora" title="Aurora"></button>
+    </div>
+    <a href="/fleet-metric/topology/index.html" style="margin-right:12px">🌐 eero N/W by Topology</a>
+    <a href="/design" style="margin-right:12px">📐 Design</a>
+    <a href="/">← Back to Home</a>
+    
+  </div>
+</header>
+
+<div class="page-content fade-in">
+  <!-- Top-level tabs -->
+  <div class="fh-tabs">
+    <div class="fh-tab active" onclick="switchMain('latest',this)">📊 Latest Analysis</div>
+    <div class="fh-tab" onclick="switchMain('jira',this)">🎫 Issue Tracker</div>
+    <div class="fh-tab" onclick="switchMain('past',this)">📁 Past Results</div>
+  </div>
+
+  <!-- ===== Latest Analysis Panel ===== -->
+  <div id="panel-latest" class="fh-panel active">
+    <div class="latest-row" id="latestBtns" style="max-width:600px;margin:20px auto">
+      <a class="latest-btn" id="lb-stage" href="#">🧪 Stage<br><span style="display:inline-block;margin-top:8px;padding:6px 18px;background:linear-gradient(180deg,#ffe066,#ffcc00);color:#1a1a2e;border-radius:6px;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.3),0 0 12px #ffcc0066;border:1px solid #e6b800;cursor:pointer">▶ Click</span> <span style="font-size:11px;opacity:0.7">for dashboard</span></a>
+      <a class="latest-btn" id="lb-beta" href="#">👥 Beta<br><span style="display:inline-block;margin-top:8px;padding:6px 18px;background:linear-gradient(180deg,#ffe066,#ffcc00);color:#1a1a2e;border-radius:6px;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.3),0 0 12px #ffcc0066;border:1px solid #e6b800;cursor:pointer">▶ Click</span> <span style="font-size:11px;opacity:0.7">for dashboard</span></a>
+      <a class="latest-btn" id="lb-prod" href="#">🌍 Prod<br><span style="display:inline-block;margin-top:8px;padding:6px 18px;background:linear-gradient(180deg,#ffe066,#ffcc00);color:#1a1a2e;border-radius:6px;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.3),0 0 12px #ffcc0066;border:1px solid #e6b800;cursor:pointer">▶ Click</span> <span style="font-size:11px;opacity:0.7">for dashboard</span></a>
+    </div>
+    <!-- Executive Summary Columns -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <span id="jira-sync-status"><div style="font-size:18px;color:var(--accent,#4fc3f7)">⏳ Syncing Jira tickets...<div style="margin-top:6px;height:4px;width:200px;background:#333;border-radius:4px;overflow:hidden"><div style="height:100%;width:60%;background:linear-gradient(90deg,#4fc3f7,#0099cc,#4fc3f7);background-size:200%;border-radius:4px;animation:jiraSync 1.2s ease-in-out infinite"></div></div></div></span>
+    </div>
+    <!-- Issue Summary (rendered by JS) -->
+    <div id="issue-summary" style="margin:12px 0;padding:12px;background:var(--bg-elevated,#1a1a2e);border:1px solid var(--border-subtle,#333);border-radius:8px;font-size:13px"></div>
+    <div id="current-exec-label" style="margin-top:12px;font-size:14px;font-weight:bold;color:#66bb6a;display:none">📌 Current — runs after freeze</div>
+    <div class="fh-columns" id="execSummary" style="margin-top:8px">
+      <div>
+        <div class="fh-col-header">🧪 Stage</div>
+        <div class="fh-col-body" id="es-stage"><div class="empty-state">Loading...</div></div>
+      </div>
+      <div>
+        <div class="fh-col-header">👥 Beta</div>
+        <div class="fh-col-body" id="es-beta"><div class="empty-state">No data yet</div></div>
+      </div>
+      <div>
+        <div class="fh-col-header">🌍 Prod</div>
+        <div class="fh-col-body" id="es-prod"><div class="empty-state">No data yet</div></div>
+      </div>
+    </div>
+    <div id="frozen-summary" style="margin:16px 0 12px;padding:16px;background:#0a0a1a;border:2px solid #ff9800;border-radius:8px;font-size:13px;display:none"></div>
+    <div id="frozen-exec-label" style="margin-top:12px;padding-top:12px;font-size:14px;font-weight:bold;color:#888;display:none">🔒 Frozen exec summary — runs before freeze</div>
+    <div class="fh-columns" id="frozenExecSummary" style="margin-top:8px;display:none">
+      <div>
+        <div class="fh-col-header" style="color:#888">🧪 Stage</div>
+        <div class="fh-col-body" id="fes-stage"></div>
+      </div>
+      <div>
+        <div class="fh-col-header" style="color:#888">👥 Beta</div>
+        <div class="fh-col-body" id="fes-beta"></div>
+      </div>
+      <div>
+        <div class="fh-col-header" style="color:#888">🌍 Prod</div>
+        <div class="fh-col-body" id="fes-prod"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Issue Tracker Panel ===== -->
+  <div id="panel-jira" class="fh-panel">
+    <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h2 style="color:var(--accent);font-size:16px;margin-bottom:4px">🎫 Mesh Metric Issue Tracker</h2>
+        <p style="font-size:11px;color:var(--fg-dim)">Tickets with labels: <code>eero-ai-mesh-metric</code> or <code>mesh-metrics-review</code></p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="jira-refresh-btn" onclick="refreshJiras()" style="padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);background:var(--bg-elevated);color:var(--fg);cursor:pointer;font-size:12px;white-space:nowrap">🔄 Refresh from Jira</button>
+      </div>
+    </div>
+    <div id="jira-new-section">
+      <div style="font-size:14px;font-weight:bold;color:#66bb6a;margin-bottom:8px">🆕 New Issues <span style="font-size:10px;font-weight:normal;color:var(--fg-dim)">(created after latest analysis)</span></div>
+      <div id="jira-new-body"><div class="empty-state">Loading...</div></div>
+    </div>
+    <div id="jira-old-section" style="margin-top:20px;border-top:1px solid var(--border-subtle);padding-top:12px">
+      <div style="font-size:14px;font-weight:bold;color:var(--fg-dim);margin-bottom:8px">📂 Old Issues <span style="font-size:10px;font-weight:normal;color:var(--fg-dim)">(created before latest analysis)</span></div>
+      <div id="jira-old-body"><div class="empty-state">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- ===== Run Panel ===== -->
+  <div id="panel-past" class="fh-panel">
+    <div class="fh-columns">
+      <div>
+        <div class="fh-col-header">🧪 Stage</div>
+        <div class="fh-col-body" id="past-stage"><div class="empty-state">Loading...</div></div>
+      </div>
+      <div>
+        <div class="fh-col-header">👥 Beta</div>
+        <div class="fh-col-body" id="past-beta"><div class="empty-state">Loading...</div></div>
+      </div>
+      <div>
+        <div class="fh-col-header">🌍 Prod</div>
+        <div class="fh-col-body" id="past-prod"><div class="empty-state">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="schedule-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center">
+<div style="background:#1a1a2e;border:1px solid #444;border-radius:8px;padding:20px;width:500px;max-height:80vh;overflow-y:auto">
+<h3 style="color:#66bb6a;margin-bottom:12px">📅 Scheduled Runs</h3>
+<div id="schedule-list"></div>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid #333">
+<b style="font-size:12px;color:#888">Add New Schedule:</b>
+<div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">
+<select id="sched-env" style="background:#222;color:#fff;border:1px solid #444;padding:4px;border-radius:4px">
+<option value="stage:0,2">🧪 Stage</option><option value="prod:2,3">👥 Beta</option><option value="prod:0">🌍 Prod</option></select>
+<select id="sched-day" style="background:#222;color:#fff;border:1px solid #444;padding:4px;border-radius:4px">
+<option value="0">Sun</option><option value="1" selected>Mon</option><option value="2">Tue</option><option value="3">Wed</option><option value="4">Thu</option><option value="5">Fri</option><option value="6">Sat</option></select>
+<input id="sched-time" type="time" value="06:00" style="background:#222;color:#fff;border:1px solid #444;padding:4px;border-radius:4px">
+<button onclick="addSchedule()" style="background:#66bb6a;color:#000;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-weight:bold">+ Add</button>
+</div></div>
+<button onclick="document.getElementById('schedule-modal').style.display='none'" style="margin-top:12px;background:#333;color:#fff;border:1px solid #555;padding:6px 16px;border-radius:4px;cursor:pointer">Close</button>
+</div></div>
+<script nonce="s3cur3H4rmonyN0nc3" src="/fleet-health.js"></script>
+</body>
+</html>

@@ -84,6 +84,7 @@ class JiraProxyHandler(BaseHTTPRequestHandler):
         return None
 
     def _get_cloud_id(self, token):
+        return "f7e6e380-666d-482d-bbe8-05b9c2aa0482"  # eeroinc.atlassian.net
         resources = jira_api_call('https://api.atlassian.com/oauth/token/accessible-resources', token)
         if isinstance(resources, list) and resources:
             return resources[0]['id']
@@ -165,7 +166,7 @@ class JiraProxyHandler(BaseHTTPRequestHandler):
             jql = qs.get('jql', ['project=CONN ORDER BY created DESC'])[0]
             max_results = qs.get('maxResults', ['50'])[0]
             result = jira_api_call(
-                f'https://api.atlassian.com/ex/jira/{cloud_id}/rest/api/3/search?jql={quote(jql)}&maxResults={max_results}',
+                f'https://api.atlassian.com/ex/jira/{cloud_id}/rest/api/3/search/jql?jql={quote(jql)}&maxResults={max_results}&fields=summary,status,labels,created,priority',
                 token
             )
             self._respond(200, result)

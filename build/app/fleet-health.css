@@ -1,0 +1,21 @@
+.page-content{max-width:98%;padding:12px 1%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+@keyframes jiraSync{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.latest-row{display:flex;gap:12px}
+.fh-columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fh-col-body{min-height:300px}
+.fh-col-body>div{margin-bottom:12px}
+.latest-btn{
+  flex:1;padding:14px 12px;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg, var(--accent), #0099cc);
+  cursor:pointer;text-align:center;transition:all var(--transition);
+  text-decoration:none;font-size:14px;font-weight:700;color:#0a0a14;
+  box-shadow:0 0 12px var(--accent-glow), 0 0 24px rgba(0,212,255,0.08);
+  animation:btnGlow 2s ease-in-out infinite alternate;
+}
+.latest-btn:hover{transform:translateY(-2px);box-shadow:0 0 20px var(--accent), 0 0 40px var(--accent-glow);color:#0a0a14}
+.latest-btn.disabled{opacity:0.3;pointer-events:none;background:var(--bg-elevated);color:var(--fg-dim);box-shadow:none;animation:none}
+@keyframes btnGlow{
+  0%{box-shadow:0 0 8px var(--accent-glow), 0 0 16px rgba(0,212,255,0.06)}
+  100%{box-shadow:0 0 16px var(--accent-glow), 0 0 32px rgba(0,212,255,0.12)}
+}
